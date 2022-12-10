@@ -27,7 +27,15 @@ public:
 	Ring(Ring& other_obj);
 	~Ring() = default;
 
+	Ring<Key>& operator=(Ring<Key>& other_obj);
+	bool operator==(Ring<Key>& other_obj);
+	bool operator!=(Ring<Key>& other_obj);
+
 	bool add(Key key);
+	bool insert(Key key);
+
+	bool remove(Key key);
+	bool remove_all(Key key);
 
 	void print();
 };
@@ -39,6 +47,66 @@ Ring<Key>::Ring(Ring& other_obj) {
 	Node* curr = this->head;
 
 
+}
+
+template<typename Key>
+Ring<Key>& Ring<Key>::operator=(Ring<Key>& other_obj) {
+
+	if (!this->head || !other_obj.head) return; 
+
+	Node* curr = this->head;
+	Node* curr_other = other_obj.head;
+
+	do {
+		Node* temp = curr->next;
+		delete curr;
+		curr = temp;
+	} while (curr->next != this->head);
+
+	delete this->head;
+
+	do {
+		this->add(curr_other->key);
+
+		curr_other = curr_other->next;
+	} while (curr_other->next != other_obj.head);
+}
+
+template<typename Key>
+bool Ring<Key>::operator==(Ring<Key>& other_obj) {
+
+	if (!this->head || !other_obj.head) return false;
+
+	Node* curr = this->head;
+	Node* curr_other = other_obj.head;
+
+	do {
+
+		if (curr->key != curr_other->key)
+		{
+			return false;
+		}
+
+		curr = curr->next;
+		curr_other = curr_other->next;
+	} while (curr->next != this->head);
+
+	return true;
+}
+
+template<typename Key>
+bool Ring<Key>::operator!=(Ring<Key>& other_obj) {
+	
+	if (!this->head || !other_obj.head) return false;
+
+	if (this == other_obj)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 template<typename Key>
