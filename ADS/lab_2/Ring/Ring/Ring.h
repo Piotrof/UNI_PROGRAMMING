@@ -37,6 +37,8 @@ public:
 	bool remove(Key key);
 	bool remove_all(Key key);
 	
+	Key traverse(int dir, int i);
+
 	void print();
 };
 
@@ -44,9 +46,17 @@ public:
 template<typename Key>
 Ring<Key>::Ring(Ring& other_obj) {
 
-	Node* curr = this->head;
+	if (!this->head || !other_obj.head) return;
 
+	Node* curr = other_obj.head;
+	
+	do {
+		this->allocate_node(curr->key);
 
+		curr = curr->next;
+	} while (curr->next != other_obj.head);
+	
+	return;
 }
 
 template<typename Key>
@@ -187,6 +197,32 @@ bool Ring<Key>::remove_all(Key key) {
 }
 
 template<typename Key>
+Key Ring<Key>::traverse(int dir, int i) {
+
+	if (!this->head) return;
+
+	Node* curr = this->head;
+
+	if (dir == 1)
+	{
+		for (int j = 0; j < i; j++)
+		{
+			curr = curr->next;
+		}
+		return curr->key;
+	}
+	else if (dir == -1)
+	{
+		for (int j = 0; j < i; j++)
+		{
+			curr = curr->prev;
+		}
+
+		return curr->key;
+	}
+}
+
+template<typename Key>
 void Ring<Key>::print() {
 
 	if (!this->head) return;
@@ -204,8 +240,56 @@ void Ring<Key>::print() {
 
 //external split function
 template<typename Key>
-void split(Ring<Key>& source, int step, int dir, Ring<Key>&res_1, Ring<Key>&res_2) {
+void split(Ring<Key>& source, int step_1, int dir_1, int len_1, Ring<Key>&res_1, int step_2, int dir_2, int len_2, Ring<Key>&res_2) {
+	
+	if (!source->head) return;
 
+	if (dir_1 != 1 || dir_1 != -1 || dir_2 != 1 || dir_2 != -1)
+	{
+		cout << "Incorrect value for variable dir_1 or dir_2. Set the dir variable to 1 to go clockwise, set the dir variable to -1 to go counter-clockwise.\n";
+		return;
+	}
+
+	int curr_len_1 = 0, curr_len_2 = 0;
+
+	while (curr_len_1 < len_1 || curr_len_2 < len_2)
+	{
+		if (curr_len_1 < len_1)
+		{
+			if (dir_1 == 1)
+			{
+				for (int i = 0; i < step_1; i++)
+				{
+					res_1.add(source.traverse(dir_1, i));
+				}
+			}
+			else if (dir_1 == -1)
+			{
+				for (int i = 0; i < step_1; i++)
+				{
+					res_1.add(source.traverse(dir_1, i));
+				}
+			}
+		}
+
+		if (curr_len_2 < len_2)
+		{
+			if (dir_2 == 1)
+			{
+				for (int i = 0; i < step_2; i++)
+				{
+					res_2.add(source.traverse(dir_2, i));
+				}
+			}
+			else if (dir_2 == -1)
+			{
+				for (int i = 0; i < step_2; i++)
+				{
+					res_2.add(source.traverse(dir_2, i));
+				}
+			}
+		}
+	}
 }
 
 #endif // !_RING_H_
