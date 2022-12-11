@@ -32,11 +32,11 @@ public:
 	bool operator!=(Ring<Key>& other_obj);
 
 	bool add(Key key);
-	bool insert(Key key);
+	bool insert(Key key, Key prev_key);
 
 	bool remove(Key key);
 	bool remove_all(Key key);
-
+	
 	void print();
 };
 
@@ -122,6 +122,71 @@ bool Ring<Key>::add(Key key) {
 }
 
 template<typename Key>
+bool Ring<Key>::insert(Key key, Key prev_key) {
+
+	if (!this->head) return false;
+
+	Node* curr = this->head;
+
+	do {
+		if (curr->prev->key == prev_key)
+		{
+			curr->prev->next = allocate_node(key);
+			curr->prev->next->prev = curr->prev;
+			curr->prev->next->next = curr;
+			return true;
+		}
+
+		curr = curr->next;
+	} while (curr->next != this->head);
+
+	return false;
+}
+
+template<typename Key>
+bool Ring<Key>::remove(Key key) {
+	
+	if (!this->head) return false;
+
+	Node* curr = this->head;
+
+	do {
+		if (curr->key == key)
+		{
+			curr->prev->next = curr->next;
+			delete curr;
+			return true;
+		}
+
+		curr = curr->next;
+	} while (curr->next != this->head);
+
+	return false;
+}
+
+template<typename Key>
+bool Ring<Key>::remove_all(Key key) {
+
+	if (!this->head) return false;
+
+	Node* curr = this->head;
+	bool is_removed = false;
+
+	do {
+		if (curr->key == key)
+		{
+			curr->prev->next = curr->next;
+			delete curr;
+			is_removed = true;
+		}
+
+		curr = curr->next;
+	} while (curr->next != this->head);
+
+	return is_removed;
+}
+
+template<typename Key>
 void Ring<Key>::print() {
 
 	if (!this->head) return;
@@ -139,7 +204,7 @@ void Ring<Key>::print() {
 
 //external split function
 template<typename Key>
-void split(Ring<Key>& source, int step, int len, Ring<Key>&res_1, Ring<Key>&res_2) {
+void split(Ring<Key>& source, int step, int dir, Ring<Key>&res_1, Ring<Key>&res_2) {
 
 }
 
