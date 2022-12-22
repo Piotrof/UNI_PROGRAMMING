@@ -1,2 +1,3 @@
 ﻿  main.cpp
+C:\Users\piotr\OneDrive\Dokumenty\AAACTUAL_DOCS\REPOS\UNI_PROGRAMMING\ADS\lab_2\Ring\Ring\Ring.h(293): warning C4715: "Ring<int>::traverse”: niewszystkie ścieżki kodu zwracają wartość
   Ring.vcxproj -> C:\Users\piotr\OneDrive\Dokumenty\AAACTUAL_DOCS\REPOS\UNI_PROGRAMMING\ADS\lab_2\Ring\Debug\Ring.exe

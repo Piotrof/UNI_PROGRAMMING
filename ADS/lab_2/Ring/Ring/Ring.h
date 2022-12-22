@@ -23,7 +23,7 @@ private:
 	Node* head;
 
 public:
-	Ring() = default;
+	Ring() { this->head = nullptr; };
 	Ring(Ring& other_obj);
 	~Ring() = default;
 
@@ -32,6 +32,7 @@ public:
 	bool operator!=(Ring<Key>& other_obj);
 
 	bool add(Key key);
+	bool add_before(Key key);
 	bool insert(Key key, Key prev_key);
 
 	bool remove(Key key);
@@ -121,34 +122,90 @@ bool Ring<Key>::operator!=(Ring<Key>& other_obj) {
 
 template<typename Key>
 bool Ring<Key>::add(Key key) {
+	if (this->head == nullptr)
+	{
+		this->head = allocate_node(key);
+		this->head->next = this->head;
+		this->head->prev = this->head;
+		return true;
+	}
+	else if (this->head->next == this->head)
+	{
+		Node* temp = allocate_node(key);
+		this->head->next = temp;
+		this->head->prev = temp;
+		temp->next = this->head;
+		temp->prev = this->head;
+		return true;
+	}
+	else
+	{
+		Node* temp = this->head->prev;
+		Node* new_node = allocate_node(key);
+		temp->next = new_node;
+		new_node->next = this->head;
+		this->head->prev = new_node;
+		new_node->prev = temp;
+		return true;
+	}
 
-	Node* curr = this->head->prev;
-	curr->next = allocate_node(key);
-	Node* temp = curr;
-	curr = curr->next;
-	curr->next = this->head;
-	curr->prev = temp;
-	this->head->prev = curr;
+	return false;
+}
+
+template<typename Key>
+bool Ring<Key>::add_before(Key key) {
+	if (this->head == nullptr)
+	{
+		this->head = allocate_node(key);
+		this->head->next = this->head;
+		this->head->prev = this->head;
+		return true;
+	}
+	else if (this->head->next == this->head)
+	{
+		Node* temp = allocate_node(key);
+		this->head->next = temp;
+		this->head->prev = temp;
+		temp->next = this->head;
+		temp->prev = this->head;
+		return true;
+	}
+	else
+	{
+		Node* temp = this->head->next;
+		Node* new_node = allocate_node(key);
+		temp->prev = new_node;
+		new_node->prev = this->head;
+		this->head->next = new_node;
+		new_node->next = temp;
+		return true;
+	}
+
+	return false;
 }
 
 template<typename Key>
 bool Ring<Key>::insert(Key key, Key prev_key) {
 
-	if (!this->head) return false;
+	if (this->head == nullptr) return false;
 
 	Node* curr = this->head;
+	Node* prev = curr->prev;
 
 	do {
-		if (curr->prev->key == prev_key)
+		if (prev->key == prev_key)
 		{
-			curr->prev->next = allocate_node(key);
-			curr->prev->next->prev = curr->prev;
-			curr->prev->next->next = curr;
+			Node* new_node = allocate_node(key);
+			new_node->prev = prev;
+			new_node->next = curr;
+			curr->prev = new_node;
+			prev->next = new_node;
 			return true;
 		}
 
+		prev = curr;
 		curr = curr->next;
-	} while (curr->next != this->head);
+	} while (curr != this->head);
 
 	return false;
 }
@@ -163,13 +220,28 @@ bool Ring<Key>::remove(Key key) {
 	do {
 		if (curr->key == key)
 		{
-			curr->prev->next = curr->next;
-			delete curr;
-			return true;
+			if (curr == this->head)
+			{
+				Node* prev = curr->prev;
+				prev->next = curr->next;
+				head = curr->next;
+				delete curr;
+				head->prev = prev;
+				return true;
+			}
+			else
+			{
+				Node* prev = curr->prev;
+				prev->next = curr->next;
+				Node* next = curr->next;
+				delete curr;
+				next->prev = prev;
+				return true;
+			}	
 		}
 
 		curr = curr->next;
-	} while (curr->next != this->head);
+	} while (curr != this->head);
 
 	return false;
 }
@@ -191,15 +263,13 @@ bool Ring<Key>::remove_all(Key key) {
 		}
 
 		curr = curr->next;
-	} while (curr->next != this->head);
+	} while (curr != this->head);
 
 	return is_removed;
 }
 
 template<typename Key>
 Key Ring<Key>::traverse(int dir, int i) {
-
-	if (!this->head) return;
 
 	Node* curr = this->head;
 
@@ -232,25 +302,25 @@ void Ring<Key>::print() {
 
 	cout << "Printing Ring.\n";
 	do {
-		cout << "El. no. " << i << ": " << curr->key << ".\n";
+		cout << "El. no. " << i + 1<< ": " << curr->key << ".\n";
 
 		curr = curr->next;
-	} while (curr->next != this->head);
+		i++;
+	} while (curr != this->head);
 }
 
 //external split function
 template<typename Key>
 void split(Ring<Key>& source, int step_1, int dir_1, int len_1, Ring<Key>&res_1, int step_2, int dir_2, int len_2, Ring<Key>&res_2) {
-	
-	if (!source->head) return;
 
-	if (dir_1 != 1 || dir_1 != -1 || dir_2 != 1 || dir_2 != -1)
+	if (dir_1 != 1 && dir_1 != -1 && dir_2 != 1 && dir_2 != -1)
 	{
 		cout << "Incorrect value for variable dir_1 or dir_2. Set the dir variable to 1 to go clockwise, set the dir variable to -1 to go counter-clockwise.\n";
 		return;
 	}
 
 	int curr_len_1 = 0, curr_len_2 = 0;
+	int steps_taken_1 = 0, steps_taken_2 = 0;
 
 	while (curr_len_1 < len_1 || curr_len_2 < len_2)
 	{
@@ -260,15 +330,19 @@ void split(Ring<Key>& source, int step_1, int dir_1, int len_1, Ring<Key>&res_1,
 			{
 				for (int i = 0; i < step_1; i++)
 				{
-					res_1.add(source.traverse(dir_1, i));
+					res_1.add(source.traverse(dir_1,i + steps_taken_1));
 				}
+				steps_taken_1 += step_1;
+				curr_len_1++;
 			}
 			else if (dir_1 == -1)
 			{
 				for (int i = 0; i < step_1; i++)
 				{
-					res_1.add(source.traverse(dir_1, i));
+					res_1.add(source.traverse(dir_1, i + steps_taken_1));
 				}
+				steps_taken_1 += step_1;
+				curr_len_1++;
 			}
 		}
 
@@ -278,18 +352,78 @@ void split(Ring<Key>& source, int step_1, int dir_1, int len_1, Ring<Key>&res_1,
 			{
 				for (int i = 0; i < step_2; i++)
 				{
-					res_2.add(source.traverse(dir_2, i));
+					res_2.add(source.traverse(dir_2, i + steps_taken_2));
 				}
+				steps_taken_2 += step_2;
+				curr_len_2++;
 			}
 			else if (dir_2 == -1)
 			{
 				for (int i = 0; i < step_2; i++)
 				{
-					res_2.add(source.traverse(dir_2, i));
+					res_2.add(source.traverse(dir_2, i + steps_taken_2));
 				}
+				steps_taken_2 += step_2;
+				curr_len_2++;
 			}
 		}
 	}
 }
 
+template<typename Key>
+void split_corrected(Ring<Key>& source, int source_direction,int no_of_steps, Ring<Key>& res_1, int step_length_1, int dir_res_1, 
+																			  Ring<Key>& res_2, int step_length_2, int dir_res_2) {
+
+	if (source_direction != 1 && source_direction != -1)
+	{
+		cout << "source direction variable incorrect.\n";
+		return;
+	}
+
+	if (dir_res_1 != 1 && dir_res_1 != -1)
+	{
+		cout << "res_1 direction variable incorrect.\n";
+		return;
+	}
+
+	if (dir_res_2 != 1 && dir_res_2 != -1)
+	{
+		cout << "res_2 direction variable incorrect.\n";
+		return;
+	}
+	
+	int steps_taken = 0;
+	int offset = 0;
+
+	while (steps_taken < no_of_steps)
+	{	
+		for (int i = 0; i < step_length_1; i++)
+		{
+			if (dir_res_1 == 1)
+			{
+				res_1.add(source.traverse(source_direction, i + offset));
+			}
+			else
+			{
+				res_1.add_before(source.traverse(source_direction, i + offset));
+			}
+		}
+		offset += step_length_1;
+
+		for (int i = 0; i < step_length_2; i++)
+		{
+			if (dir_res_2 == 1)
+			{
+				res_2.add(source.traverse(source_direction, i + offset));
+			}
+			else
+			{
+				res_2.add_before(source.traverse(source_direction, i + offset));
+			}	
+		}
+		offset += step_length_2;
+		steps_taken++;
+	}
+}
 #endif // !_RING_H_
+	
