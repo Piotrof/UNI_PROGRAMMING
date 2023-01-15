@@ -2,7 +2,6 @@
 #include <fstream>
 #include "Dictionary.h"
 
-
 using namespace std;
 
 int main() {

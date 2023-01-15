@@ -1,0 +1,25 @@
+//
+// EADS Task#3 description (term 2022Z)
+//
+// The deadline for the TASK#3 is Jan 18, 2023 at 2 pm
+//
+// ----------------------------------------------------
+//
+// Part 1 - design and implement a class Dictionary 
+// (complete and fully operational) implemented as AVL Tree
+//
+template <typeneme Key, typename Info>
+class  Dictionary { // AVL Tree
+...
+};
+// ----------------------------------------------------
+//
+// Part 2 - write an additional (external) function (not a method)
+//
+// Function#1
+//
+Dictionary <string, int> Counter (const string& filename)
+//
+// The function Counter creates a Dictionary of words read from the text file,
+// together with the word occurrence count, ordered lexically
+
